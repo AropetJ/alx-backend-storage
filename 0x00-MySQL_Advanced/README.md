@@ -46,6 +46,7 @@ $
 --Connect via SSH
 O--r via the WebTerminal
 --In the container, you should start MySQL before playing with it:
+```bash
 $ service mysql start
  * MySQL Community Server 5.7.30 is started
 $
@@ -56,9 +57,10 @@ information_schema
 mysql
 performance_schema
 sys
-$
+```
 In the container, credentials are root/root
 
+```bash
 - How to import a SQL dump
 $ echo "CREATE DATABASE hbtn_0d_tvshows;" | mysql -uroot -p
 Enter password: 
@@ -75,4 +77,4 @@ id  name
 6   Crime
 7   Suspense
 8   Thriller
-$
+```
