@@ -16,15 +16,15 @@
 At the end of this project, you are expected to be able to explain to anyone, without the help of Google:
 
 ### General
--What NoSQL means
--What is difference between SQL and NoSQL
--What is ACID
--What is a document storage
--What are NoSQL types
--What are benefits of a NoSQL database
--How to query information from a NoSQL database
--How to insert/update/delete information from a NoSQL database
--How to use MongoDB
+- What NoSQL means
+- What is difference between SQL and NoSQL
+- What is ACID
+- What is a document storage
+- What are NoSQL types
+- What are benefits of a NoSQL database
+- How to query information from a NoSQL database
+- How to insert/update/delete information from a NoSQL database
+- How to use MongoDB
 
 ## Requirements
 ### MongoDB Command File
@@ -84,10 +84,10 @@ Or if `/etc/init.d/mongod` is missing, please find here an example of the file:
 
 Click to expand/hide file contents
 Use “container-on-demand” to run MongoDB
--- Ask for container `Ubuntu 18.04 - MongoDB`
--- Connect via SSH
--- Or via the WebTerminal
--- In the container, you should start MongoDB before playing with it:
+- Ask for container `Ubuntu 18.04 - MongoDB`
+- Connect via SSH
+- Or via the WebTerminal
+- In the container, you should start MongoDB before playing with it:
 
 ```bash
 $ service mongod start
