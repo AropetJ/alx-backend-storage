@@ -34,7 +34,7 @@ At the end of this project, you are expected to be able to explain to anyone, wi
 - A `README.md` file, at the root of the folder of the project, is mandatory
 - The length of your files will be tested using wc
 
-Python Scripts
+### Python Scripts
 - All your files will be interpreted/compiled on Ubuntu 18.04 LTS using python3 (version 3.7) and PyMongo (version 3.10)
 - All your files should end with a new line
 - he first line of all your files should be exactly `#!/usr/bin/env python3`
