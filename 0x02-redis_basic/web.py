@@ -5,10 +5,12 @@ import requests
 import functools
 import time
 import redis
+from typing import Callable
 
 redis_client = redis.Redis()
 
-def cache_decorator(func):
+
+def cache_decorator(func: Callable) -> Callable:
     '''
     Decorator function that caches the response of a web page for 10 seconds
     and tracks the number of times a URL was accessed using Redis.
@@ -29,17 +31,15 @@ def cache_decorator(func):
         Returns:
             str: The content of the web page.
         '''
-        count_key = f'count:{url}'
-        cached_response = redis_client.get(url)
+        redis_client.incr(f'count:{url}')
+        cached_response = redis_client.get(f'cached:{url}')
         if cached_response:
-            redis_client.incr(count_key)
-            return cached_response.decode()
+            return cached_response.decode('utf-8')
 
         response = func(url)
-        redis_client.setex(url, 10, response)
-        redis_client.incr(count_key)
+        redis_client.set(f'count:{url}', 0)
+        redis_client.setex(f'result:{url}', 10, cached_response)
         return response
-
     return wrapper
 
 
