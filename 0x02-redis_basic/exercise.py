@@ -2,8 +2,20 @@
 '''exercise.py'''
 import redis
 import uuid
-from typing import Union, Callable
+from typing import Union, Callable, Any
 from functools import wraps
+
+
+def count_calls(method: Callable) -> Callable:
+    '''
+    Decorator function to count the number of times a method is called.
+    '''
+    @wraps(method)
+    def wrapper(self, *args, **kwargs)-> Any:
+        if isinstance(self._redis, redis.Redis):
+            self._redis.incr(method.__qualname__)
+        return method(self, *args, **kwargs)
+    return wrapper
 
 
 class Cache:
@@ -16,17 +28,6 @@ class Cache:
         '''
         self._redis = redis.Redis()
         self._redis.flushdb()
-
-    def count_calls(method: Callable) -> Callable:
-        '''
-        Decorator function to count the number of times a method is called.
-        '''
-        @wraps(method)
-        def wrapper(self, *args, **kwargs):
-            key = method.__qualname__
-            self._redis.incr(key)
-            return method(self, *args, **kwargs)
-        return wrapper
 
     def call_history(method: Callable) -> Callable:
         '''
