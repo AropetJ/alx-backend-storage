@@ -17,6 +17,36 @@ def count_calls(method: Callable) -> Callable:
         return method(self, *args, **kwargs)
     return wrapper
 
+def call_history(method: Callable) -> Callable:
+    '''
+    Decorator function to store the input and output history of a method.
+    '''
+    @wraps(method)
+    def wrapper(self, *args, **kwargs):
+        input_key = '{}:inputs'.format(method.__qualname__)
+        output_key = '{}:outputs'.format(method.__qualname__)
+        self._redis.rpush(input_key, str(args))
+        output = method(self, *args, **kwargs)
+        self._redis.rpush(output_key, str(output))
+        return output
+    return wrapper
+
+def replay(self, func):
+    '''
+    Prints the input and output history of a method.
+    Args:
+        func: The method to replay the history for.
+    '''
+    key = func.__qualname__ + ":inputs"
+    inputs = self._redis.lrange(key, 0, -1)
+    key = func.__qualname__ + ":outputs"
+    outputs = self._redis.lrange(key, 0, -1)
+    print(f"{func.__qualname__} was called {len(inputs)} times:")
+    for i in range(len(inputs)):
+        input_str = inputs[i].decode("utf-8")
+        output_str = outputs[i].decode("utf-8")
+        print(f"{func.__qualname__}(*{input_str}) -> {output_str}")
+
 
 class Cache:
     '''
@@ -28,20 +58,6 @@ class Cache:
         '''
         self._redis = redis.Redis()
         self._redis.flushdb()
-
-    def call_history(method: Callable) -> Callable:
-        '''
-        Decorator function to store the input and output history of a method.
-        '''
-        @wraps(method)
-        def wrapper(self, *args, **kwargs):
-            input_key = method.__qualname__ + ":inputs"
-            output_key = method.__qualname__ + ":outputs"
-            self._redis.rpush(input_key, str(args))
-            output = method(self, *args, **kwargs)
-            self._redis.rpush(output_key, str(output))
-            return output
-        return wrapper
 
     @count_calls
     @call_history
@@ -93,19 +109,3 @@ class Cache:
             The retrieved integer data.
         '''
         return self.get(key, fn=int)
-
-    def replay(self, func):
-        '''
-        Prints the input and output history of a method.
-        Args:
-            func: The method to replay the history for.
-        '''
-        key = func.__qualname__ + ":inputs"
-        inputs = self._redis.lrange(key, 0, -1)
-        key = func.__qualname__ + ":outputs"
-        outputs = self._redis.lrange(key, 0, -1)
-        print(f"{func.__qualname__} was called {len(inputs)} times:")
-        for i in range(len(inputs)):
-            input_str = inputs[i].decode("utf-8")
-            output_str = outputs[i].decode("utf-8")
-            print(f"{func.__qualname__}(*{input_str}) -> {output_str}")
