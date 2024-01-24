@@ -31,21 +31,27 @@ def call_history(method: Callable) -> Callable:
         return output
     return wrapper
 
-def replay(self, func):
+def replay(self, func: Callable) -> None:
     '''
     Prints the input and output history of a method.
     Args:
         func: The method to replay the history for.
     '''
-    key = func.__qualname__ + ":inputs"
-    inputs = self._redis.lrange(key, 0, -1)
-    key = func.__qualname__ + ":outputs"
-    outputs = self._redis.lrange(key, 0, -1)
-    print(f"{func.__qualname__} was called {len(inputs)} times:")
-    for i in range(len(inputs)):
-        input_str = inputs[i].decode("utf-8")
-        output_str = outputs[i].decode("utf-8")
-        print(f"{func.__qualname__}(*{input_str}) -> {output_str}")
+    if func is None or not hasattr(fn, '__self__'):
+        return
+    redis_client = getattr(fn.__self__, '_redis', None)
+    if not isinstance(redis_client, redis.Redis):
+        return
+    input_key = '{}:inputs'.format(func.__qualname__)
+    output_key = '{}:outputs'.format(func.__qualname__)
+    inputs = self._redis.lrange(input_key, 0, -1)
+    outputs = self._redis.lrange(output_key, 0, -1)
+    num_calls = len(inputs)
+    print(f'{func.__qualname__} was called {num_calls} times:')
+    for i in range(num_calls):
+        input_data = inputs[i].decode("utf-8")
+        output_data = outputs[i].decode("utf-8")
+        print(f'{func.__qualname__}(*{input_data}) -> {output_data}')
 
 
 class Cache:
