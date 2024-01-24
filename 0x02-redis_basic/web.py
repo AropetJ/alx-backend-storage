@@ -14,7 +14,7 @@ def cache_decorator(method: Callable) -> Callable:
     Decorator function that caches the response of a web page for 10 seconds
     and tracks the number of times a URL was accessed using Redis.
     '''
-    wraps(method)
+    @wraps(method)
     def wrapper(url) -> str:
         '''
         Wrapper function that checks if the response for a given URL is already
@@ -37,5 +37,4 @@ def get_page(url: str) -> str:
     '''
     Fetches the content of a web page.
     '''
-    response = requests.get(url)
-    return response.text
+    return requests.get(url).text
