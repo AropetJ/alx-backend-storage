@@ -36,8 +36,6 @@ def call_history(method: Callable) -> Callable:
 def replay(func: Callable) -> None:
     '''
     Prints the input and output history of a method.
-    Args:
-        func: The method to replay the history for.
     '''
     if func is None or not hasattr(func, '__self__'):
         return
@@ -77,10 +75,6 @@ class Cache:
     def store(self, data: Union[str, bytes, int, float]) -> str:
         '''
         Stores the given data in Redis and returns the generated key.
-        Args:
-            data: The data to be stored.
-        Returns:
-            The generated key for the stored data.
         '''
         key = str(uuid.uuid4())
         self._redis.set(key, data)
@@ -90,11 +84,6 @@ class Cache:
             fn: Callable = None) -> Union[str, bytes, int, float]:
         '''
         Retrieves the data associated with the given key from Redis.
-        Args:
-            key: The key to retrieve the data for.
-            fn: Optional function to apply on the retrieved data.
-        Returns:
-            The retrieved data, optionally transformed by the provided function.
         '''
         data = self._redis.get(key)
         if data is None:
@@ -106,19 +95,11 @@ class Cache:
     def get_str(self, key: str) -> str:
         '''
         Retrieves the string data associated with the given key from Redis.
-        Args:
-            key: The key to retrieve the string data for.
-        Returns:
-            The retrieved string data.
         '''
         return self.get(key, fn=lambda d: d.decode("utf-8"))
 
     def get_int(self, key: str) -> int:
         '''
         Retrieves the integer data associated with the given key from Redis.
-        Args:
-            key: The key to retrieve the integer data for.
-        Returns:
-            The retrieved integer data.
         '''
         return self.get(key, fn=int)
