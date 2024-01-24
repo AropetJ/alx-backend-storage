@@ -11,11 +11,12 @@ def count_calls(method: Callable) -> Callable:
     Decorator function to count the number of times a method is called.
     '''
     @wraps(method)
-    def wrapper(self, *args, **kwargs)-> Any:
+    def wrapper(self, *args, **kwargs) -> Any:
         if isinstance(self._redis, redis.Redis):
             self._redis.incr(method.__qualname__)
         return method(self, *args, **kwargs)
     return wrapper
+
 
 def call_history(method: Callable) -> Callable:
     '''
@@ -31,7 +32,8 @@ def call_history(method: Callable) -> Callable:
         return output
     return wrapper
 
-def replay(self, func: Callable) -> None:
+
+def replay(func: Callable) -> None:
     '''
     Prints the input and output history of a method.
     Args:
@@ -39,19 +41,24 @@ def replay(self, func: Callable) -> None:
     '''
     if func is None or not hasattr(fn, '__self__'):
         return
-    redis_client = getattr(fn.__self__, '_redis', None)
-    if not isinstance(redis_client, redis.Redis):
+    redis_client = getattr(func.__self__, '_redis', None)
+    if not isinstance(redis_store, redis.Redis):
         return
-    input_key = '{}:inputs'.format(func.__qualname__)
-    output_key = '{}:outputs'.format(func.__qualname__)
-    inputs = self._redis.lrange(input_key, 0, -1)
-    outputs = self._redis.lrange(output_key, 0, -1)
-    num_calls = len(inputs)
-    print(f'{func.__qualname__} was called {num_calls} times:')
-    for i in range(num_calls):
-        input_data = inputs[i].decode("utf-8")
-        output_data = outputs[i].decode("utf-8")
-        print(f'{func.__qualname__}(*{input_data}) -> {output_data}')
+    fxn_name = fn.__qualname__
+    in_key = '{}:inputs'.format(fxn_name)
+    out_key = '{}:outputs'.format(fxn_name)
+    fxn_call_count = 0
+    if redis_client.exists(fxn_name) != 0:
+        fxn_call_count = int(redis_store.get(fxn_name))
+    print('{} was called {} times:'.format(fxn_name, fxn_call_count))
+    fxn_inputs = redis_client.lrange(in_key, 0, -1)
+    fxn_outputs = redis_client.lrange(out_key, 0, -1)
+    for fxn_input, fxn_output in zip(fxn_inputs, fxn_outputs):
+        print('{}(*{}) -> {}'.format(
+            fxn_name,
+            fxn_input.decode("utf-8"),
+            fxn_output,
+        ))
 
 
 class Cache:
