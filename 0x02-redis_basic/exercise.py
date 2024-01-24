@@ -39,17 +39,17 @@ def replay(func: Callable) -> None:
     Args:
         func: The method to replay the history for.
     '''
-    if func is None or not hasattr(fn, '__self__'):
+    if func is None or not hasattr(func, '__self__'):
         return
     redis_client = getattr(func.__self__, '_redis', None)
-    if not isinstance(redis_store, redis.Redis):
+    if not isinstance(redis_client, redis.Redis):
         return
-    fxn_name = fn.__qualname__
+    fxn_name = func.__qualname__
     in_key = '{}:inputs'.format(fxn_name)
     out_key = '{}:outputs'.format(fxn_name)
     fxn_call_count = 0
     if redis_client.exists(fxn_name) != 0:
-        fxn_call_count = int(redis_store.get(fxn_name))
+        fxn_call_count = int(redis_client.get(fxn_name))
     print('{} was called {} times:'.format(fxn_name, fxn_call_count))
     fxn_inputs = redis_client.lrange(in_key, 0, -1)
     fxn_outputs = redis_client.lrange(out_key, 0, -1)
