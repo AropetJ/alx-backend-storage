@@ -21,13 +21,13 @@ def cache_decorator(method: Callable) -> Callable:
         cached in Redis.
         '''
         redis_client.incr(f'count:{url}')
-        cached_response = redis_client.get(f'cached:{url}')
+        cached_response = redis_client.get(f'cached_response:{url}')
         if cached_response:
             return cached_response.decode('utf-8')
 
-        cached_response = func(url)
+        cached_response = method(url)
         redis_client.set(f'count:{url}', 0)
-        redis_client.setex(f'result:{url}', 10, cached_response)
+        redis_client.setex(f'cached_reponse:{url}', 10, cached_response)
         return cached_response
     return wrapper
 
