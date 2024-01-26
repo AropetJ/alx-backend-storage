@@ -20,15 +20,18 @@ def cache_decorator(method: Callable) -> Callable:
         Wrapper function that checks if the response for a given URL is already
         cached in Redis.
         '''
-        redis_client.incr(f'count:{url}')
-        cached_response = redis_client.get(f'cached_response:{url}')
-        if cached_response:
-            return cached_response.decode('utf-8')
-        cached_response = method(url)
-        redis_client.set(f'count:{url}', 0)
-        redis_client.setex(f'cached_reponse:{url}', 10, cached_response)
-        return cached_response
-    return wrapper
+        @wraps(method)
+        def wrapper(url): 
+            """ Wrapper for decorator """
+            redis_client.incr(f"count:{url}")
+            cached_html = redis_client.get(f"cached:{url}")
+            if cached_html:
+                return cached_html.decode('utf-8')
+            html = method(url)
+            redis_client.setex(f"cached:{url}", 10, html)
+            return html
+
+        return wrapper
 
 
 @cache_decorator
