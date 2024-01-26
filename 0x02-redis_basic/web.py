@@ -12,16 +12,19 @@ redis_ = redis.Redis()
 def count_requests(method: Callable) -> Callable:
     """ Decortator for counting """
     @wraps(method)
-    def wrapper(url):  # sourcery skip: use-named-expression
-        """ Wrapper for decorator """
-        redis_.incr(f"count:{url}")
-        cached_html = redis_.get(f"cached:{url}")
-        if cached_html:
-            return cached_html.decode('utf-8')
-        html = method(url)
-        redis_.setex(f"cached:{url}", 10, html)
-        return html
+    def wrapper(url):
+        cached_key = "cached:" + url
+        cached_data = redis_.get(cached_key)
+        if cached_data:
+            return cached_data.decode("utf-8")
 
+        count_key = "count:" + url
+        html = method(url)
+
+        redis_.incr(count_key)
+        redis_.set(cached_key, html)
+        redis_.expire(cached_key, 10)
+        return html
     return wrapper
 
 
