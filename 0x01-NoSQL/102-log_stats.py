@@ -1,55 +1,49 @@
 #!/usr/bin/env python3
-"""102-log_stats.py"""
+'''Log stats'''
 from pymongo import MongoClient
 
 
-def print_stats(nginx_logs):
-    """
-    Print the number of logs, the methods used, and the status checks.
+def print_nginx_request_logs(nginx_collection):
+    """Prints stats about Nginx request logs.
     Args:
-    - nginx_logs: The collection of Nginx logs
+        nginx_collection (collection): The collection of Nginx
+        request logs.
     Returns:
-    - None
+        None
     """
-    log_count = nginx_logs.count_documents({})
-    print(f"{log_count} logs")
-    print("Methods:")
-    methods = ["GET", "POST", "PUT", "PATCH", "DELETE"]
+    print(f"{nginx_collection.count_documents({})} logs")
+    methods = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
     for method in methods:
-        method_logs = nginx_logs.find({"method": method})
-        method_count = method_logs.count()
-        print(f"\tmethod {method}: {method_count}")
-    status_logs = nginx_logs.find({"method": "GET", "path": "/status"})
-    status_count = status_logs.count()
-    print(f"{status_count} status check")
+        req_count = nginx_collection.count_documents({'method': method})
+        print(f"method {method}: {req_count}")
+    status_checks_count = nginx_collection.count_documents({'method':
+                                                            'GET', 'path':
+                                                            '/status'})
+    print(f"{status_checks_count} status check")
 
 
-def print_ips(nginx_logs):
-    """
-    Print the IP addresses and the number of requests for each.
-
+def print_top_ips(server_collection):
+    """Prints statistics about the top 10 HTTP IPs in a collection.
     Args:
-    - nginx_logs: The collection of Nginx logs
-
+        server_collection (collection): The collection containing the
+        server logs.
     Returns:
-    - None
+        None
     """
     print("IPs:")
-    ip_logs = nginx_logs.aggregate(
-        [
-            {"$group": {"_id": "$ip", "totalRequests": {"$sum": 1}}},
-            {"$sort": {"totalRequests": -1}},
-            {"$limit": 10},
-        ]
-    )
-    for ip_log in ip_logs:
-        ip = ip_log["_id"]
-        ip_requests_count = ip_log["totalRequests"]
-        print(f"\t{ip}: {ip_requests_count}")
+    request_logs = server_collection.aggregate([
+        {'$group': {'_id': "$ip", 'totalRequests': {'$sum': 1}}},
+        {'$sort': {'totalRequests': -1}},
+        {'$limit': 10}
+    ])
+    for request_log in request_logs:
+        ip = request_log['_id']
+        ip_requests_count = request_log['totalRequests']
+        print(f"{ip}: {ip_requests_count}")
 
 
-if __name__ == "__main__":
-    client = MongoClient()
-    nginx_logs = client.logs.nginx
-    print_stats(nginx_logs)
-    print_ips(nginx_logs)
+if __name__ == '__main__':
+    client = MongoClient('mongodb://127.0.0.1:27017')
+    nginx_collection = client.logs.nginx
+    print_nginx_request_logs(nginx_collection)
+    print_top_ips(nginx_collection)
