@@ -1,9 +1,22 @@
 #!/usr/bin/env python3
-""" MongoDB Operations with Python using pymongo """
+'''102-log_stats.py'''
+
 from pymongo import MongoClient
 
 if __name__ == "__main__":
-    """ Provides some stats about Nginx logs stored in MongoDB """
+    """
+    This script connects to a MongoDB database and performs various
+    log statistics operations. It retrieves the total number of logs,
+    counts the occurrence of different HTTP methods, checks the number
+    of status checks, and displays the top 10 IP addresses with the
+    highest log count.
+    The script uses the PyMongo library to interact with the MongoDB
+    database.
+
+    Usage:
+    - Make sure MongoDB is running on the local machine.
+    - Run the script to see the log statistics.
+    """
     client = MongoClient('mongodb://127.0.0.1:27017')
     nginx_collection = client.logs.nginx
 
