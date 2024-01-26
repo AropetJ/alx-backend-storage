@@ -17,11 +17,11 @@ def cache_decorator(method: Callable) -> Callable:
     @wraps(method)
     def wrapper(url) -> str:
         '''
-        Wrapper function that checks if the response for a given URL is already
-        cached in Redis.
+        Wrapper function that checks if the response for a given URL is
+        already cached in Redis.
         '''
         @wraps(method)
-        def wrapper(url): 
+        def wrapper(url):
             """ Wrapper for decorator """
             redis_client.incr(f"count:{url}")
             cached_html = redis_client.get(f"cached:{url}")
@@ -39,4 +39,5 @@ def get_page(url: str) -> str:
     '''
     Fetches the content of a web page.
     '''
-    return requests.get(url).text
+    req = requests.get(url)
+    return req.text
